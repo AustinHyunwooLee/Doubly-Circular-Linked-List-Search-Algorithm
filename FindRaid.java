@@ -19,13 +19,18 @@ import java.util.Queue;
  * @author Austin Lee
  */
 public class FindRaid<E extends Comparable<E>> {
+    //Implementation of a linked list
     private Node<E> head, tail;
+    //Number of elements in the linked list
     private int count;
-    private E[] input;
     class Node<E> {
+        //Data is the generic type
         E data;
+        //Index associated with each node. [1, n]
         int key;
+        //Check to confirm that we've visited a node to avoid infinity loop.
         boolean checked;
+        //Doubly linked
         Node<E> next;
         Node<E> previous;
         Node(E data, int key) {
@@ -33,22 +38,27 @@ public class FindRaid<E extends Comparable<E>> {
             this.key = key;
         }
     }
-    public FindRaid() {
-    }
     /**
-     * 
+     * Inserts the items into the linked list. 
      * @param input array of the bosses in a specific order
      */
     public FindRaid(E[] input) {
         insertRotation(input);
     }
-    
+    /***
+     * Insert these elements into the doubly linked list.
+     * @param input array of the generic type.
+     */
     private void insertRotation(E[] input) {
         for(int i = 0; i < input.length; i++)
             insertNode(input[i]);
     }
-    
+    /***
+     * Inserts the data into the doubly linked list
+     * @param data information to insert
+     */
     private void insertNode(E data) {
+        //Linked list is empty
         if(head == null) {
             head = new Node<>(data, count++);
             tail = head;
@@ -65,11 +75,48 @@ public class FindRaid<E extends Comparable<E>> {
             head.previous = tail;
         }
     }
-    
+    /***
+     * Remove (head) each element of the queue if found in the linked list.  
+     * Record the index associated with the boss
+     * @param bosses input bosses seen in the raid.
+     */
     public void searchRaidCW(Queue <E> bosses){
         Queue<Integer> tmp = new LinkedList<>();
         Node<E> current = head;
-        while(current.next != head){
+        current.checked = false;
+        current = current.next;
+        //Initialize checked to false for every node.
+        while(current != head){
+            current.checked = false;
+            current = current.next;
+        }
+        current = head;
+        //finds the node to start at.
+        while(current.next != head && current.data.compareTo(bosses.peek()) != 0){
+            current = current.next;
+        }
+        //Iterates through the linked list looking for the indices of the bosses
+        //from bosses
+        //Everytime a node is visited, checked = true even if it isn't a match.
+        while(!bosses.isEmpty()){
+            if(!current.checked){
+                if(current.data.compareTo(bosses.peek()) == 0){
+                    tmp.add(current.key);
+                    String boss = bosses.remove().toString();
+                }
+            } else return;
+            current.checked = true;
+            current = current.next;
+        }
+        System.out.println(buildRaidCW(tmp));
+    }
+    
+        public void searchRaidCCW(Queue <E> bosses){
+        Queue<Integer> tmp = new LinkedList<>();
+        Node<E> current = head;
+        current.checked = false;
+        current = current.next;
+        while(current != head){
             current.checked = false;
             current = current.next;
         }
@@ -82,87 +129,54 @@ public class FindRaid<E extends Comparable<E>> {
                 if(current.data.compareTo(bosses.peek()) == 0){
                     tmp.add(current.key);
                     String boss = bosses.remove().toString();
-    //                System.out.printf("Found %s\n", boss);
                 }
-            } else {
-                System.out.println("Not Found");
-                return;
-            }
-            current.checked = true;
-            current = current.next;
-        }
-        
-        System.out.println(buildRaidCW(tmp));
-    }
-    
-        public void searchRaidCCW(Queue <E> bosses){
-        Queue<Integer> tmp = new LinkedList<>();
-        Node<E> current = head;
-        while(current.next != head){
-            current.checked = false;
-            current = current.next;
-        }
-        current = head;
-            while(current.next != head && current.data.compareTo(bosses.peek()) != 0){
-            current = current.next;
-        }
-        
-        while(!bosses.isEmpty()){
-            if(!current.checked){
-                if(current.data.compareTo(bosses.peek()) == 0){
-                    tmp.add(current.key);
-                    String boss = bosses.remove().toString();
-    //                System.out.printf("Found %s\n", bosses);
-                }
-            } else {
-                System.out.println("Not Found");
-                return;            
-            }
-            if(current.data.compareTo(bosses.peek()) == 0){
-                if(current.checked) {
-                    System.out.println("Not Found");
-                    return;
-                }
-                tmp.add(current.key);
-                String boss = bosses.remove().toString();
-//                System.out.printf("Found %s\n", bosses);
-            }
+            } else return;            
             current.checked = true;
             current = current.previous;
         }
         System.out.println(buildRaidCCW(tmp));
     }
-    
+    /***
+     * 
+     * @param id
+     * @return 
+     */
     private String buildRaidCW(Queue <Integer> id){
+        StringBuilder sb = new StringBuilder();
         ArrayList<E> possibleRaid = new ArrayList<>();
         Node<E> currentNode = head;
         while(currentNode.key != id.peek())
             currentNode = currentNode.next;
         while(!id.isEmpty()){
+            sb.append(String.format(" %s", currentNode.data));
             possibleRaid.add(currentNode.data);
             if(currentNode.key == id.peek()){
                 int idNumber = id.remove();
-//                System.out.printf("Found %d\n", idNumber);
             }
             currentNode = currentNode.next;
         }
-        return possibleRaid.toString();
+        System.out.printf("Rotation (%d bosses):", possibleRaid.size());
+        return sb.toString();
+//        return possibleRaid.toString();
     }
     
     private String buildRaidCCW(Queue <Integer> id){
+        StringBuilder sb = new StringBuilder();
         ArrayList<E> possibleRaid = new ArrayList<>();
         Node<E> currentNode = head;
         while(currentNode.key != id.peek())
             currentNode = currentNode.previous;
         while(!id.isEmpty()){
+            sb.append(String.format(" %s", currentNode.data));
             possibleRaid.add(currentNode.data);
             if(currentNode.key == id.peek()){
                 int idNumber = id.remove();
-//                System.out.printf("Found %d\n", idNumber);
             }
             currentNode = currentNode.previous;
         }
-        return possibleRaid.toString();
+        System.out.printf("Rotation (%d bosses):", possibleRaid.size());
+        return sb.toString();
+//        return possibleRaid.toString();
     }
     
     public String toString() {

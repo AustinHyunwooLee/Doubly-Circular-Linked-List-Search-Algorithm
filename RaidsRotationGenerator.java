@@ -15,7 +15,6 @@ import java.util.Scanner;
  * @author austinlee
  */
 public class RaidsRotationGenerator {
-
     /**
      * @param args the command line arguments
      */
@@ -35,7 +34,6 @@ public class RaidsRotationGenerator {
         while(cin.hasNext()){
             temp = cin.next().toLowerCase();
             if(temp.equals("0")) break;
-            System.out.println("Adding " + temp);
             raid1CW.add(temp);
             raid1CCW.add(temp);
             raid2CW.add(temp);
